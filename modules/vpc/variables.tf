@@ -1,8 +1,15 @@
 variable "cidr" {
-  description = "VPC CIDR block"
+  description = "VPC CIDR"
   type        = string
 }
 
-variable "tags" {
-  type = map(string)
+variable "environment" {
+  description = "Environment name"
+  type        = string
+}
+
+variable "enable_vpc_endpoints" {
+  description = "Enable VPC endpoints"
+  type        = bool
+  default     = true
 }
