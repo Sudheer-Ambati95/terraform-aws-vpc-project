@@ -1,0 +1,18 @@
+[Unit]
+Description=Sample FastAPI App
+After=docker.service
+
+[Service]
+
+Restart=always
+
+ExecStart=/usr/bin/docker run \
+  --name sample-app \
+  -p 8080:8080 \
+  195731802726.dkr.ecr.us-east-1.amazonaws.com/sample-fastapi:latest
+
+ExecStop=/usr/bin/docker stop sample-app
+ExecStopPost=/usr/bin/docker rm sample-app
+
+[Install]
+WantedBy=multi-user.target

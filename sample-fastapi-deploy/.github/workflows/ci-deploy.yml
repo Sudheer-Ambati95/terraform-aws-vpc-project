@@ -1,0 +1,94 @@
+name: build-and-deploy
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  AWS_REGION: us-east-1
+  ECR_REPOSITORY: sample-fastapi
+
+jobs:
+  deploy:
+
+    runs-on: ubuntu-latest
+
+    steps:
+
+    ################################
+    # Checkout
+    ################################
+
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    ################################
+    # Build Docker image
+    ################################
+
+    - name: Build Docker image
+      run: docker build -t sample-fastapi .
+
+    ################################
+    # Trivy security scan
+    ################################
+
+    - name: Run Trivy scan
+      uses: aquasecurity/trivy-action@0.20.0
+      with:
+        scan-type: fs
+        severity: CRITICAL,HIGH
+        exit-code: 1
+
+    ################################
+    # OIDC Authentication
+    ################################
+
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/GitHubActionsOIDCRole
+        aws-region: us-east-1
+
+    ################################
+    # Login to ECR
+    ################################
+
+    - name: Login to Amazon ECR
+      uses: aws-actions/amazon-ecr-login@v2
+
+    ################################
+    # Build and Push Image
+    ################################
+
+    - name: Build and Push
+      run: |
+        IMAGE="${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.us-east-1.amazonaws.com/sample-fastapi:latest"
+
+        docker build -t $IMAGE .
+
+        docker push $IMAGE
+
+        echo "IMAGE=$IMAGE" >> $GITHUB_ENV
+
+    ################################
+    # Deploy via SSM
+    ################################
+
+    - name: Trigger SSM Deploy
+      run: |
+        aws ssm send-command \
+          --instance-ids ${{ secrets.INSTANCE_ID }} \
+          --document-name "AWS-RunShellScript" \
+          --parameters commands='[
+            "docker pull $IMAGE",
+            "docker stop sample-app || true",
+            "docker rm sample-app || true",
+            "docker run -d -p 8080:8080 --name sample-app $IMAGE"
+          ]' \
+          --region us-east-1
