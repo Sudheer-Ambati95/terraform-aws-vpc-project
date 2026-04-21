@@ -1,31 +1,9 @@
-############################
-# Environment
-############################
+variable "environment" {}
 
-variable "environment" {
-  type = string
-}
-
-############################
-# VPC
-############################
-
-variable "vpc_id" {
-  type = string
-}
-
-############################
-# Subnets
-############################
+variable "vpc_id" {}
 
 variable "subnet_ids" {
   type = list(string)
 }
 
-############################
-# Security Group
-############################
-
-variable "security_group_id" {
-  type = string
-}
+variable "security_group_id" {}

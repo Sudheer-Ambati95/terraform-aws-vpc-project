@@ -1,13 +1,6 @@
-############################
-# Application Load Balancer
-############################
-
 resource "aws_lb" "this" {
 
-  name = "${var.environment}-alb"
-
-  internal = false
-
+  name               = "${var.environment}-alb"
   load_balancer_type = "application"
 
   security_groups = [
@@ -15,50 +8,31 @@ resource "aws_lb" "this" {
   ]
 
   subnets = var.subnet_ids
-
-  tags = {
-    Name = "${var.environment}-alb"
-  }
 }
-
-############################
-# Target Group
-############################
 
 resource "aws_lb_target_group" "this" {
 
-  name = "${var.environment}-tg"
-
-  port = 80
-
+  name     = "${var.environment}-tg"
+  port     = 80
   protocol = "HTTP"
 
   vpc_id = var.vpc_id
 
   health_check {
 
-    path = "/"
-
-    interval = 30
-
-    timeout = 5
-
-    healthy_threshold = 2
-
+    path                = "/healthz"
+    interval            = 30
+    timeout             = 5
+    healthy_threshold   = 2
     unhealthy_threshold = 2
   }
 }
-
-############################
-# Listener
-############################
 
 resource "aws_lb_listener" "http" {
 
   load_balancer_arn = aws_lb.this.arn
 
-  port = 80
-
+  port     = 80
   protocol = "HTTP"
 
   default_action {

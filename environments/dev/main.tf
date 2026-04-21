@@ -1,7 +1,3 @@
-############################
-# Amazon Linux AMI
-############################
-
 data "aws_ami" "amazon_linux" {
 
   most_recent = true
@@ -18,41 +14,35 @@ data "aws_ami" "amazon_linux" {
   }
 }
 
-############################
-# VPC Module
-############################
+###########################
+# VPC
+###########################
 
 module "vpc" {
 
   source = "../../modules/vpc"
 
-  cidr = var.vpc_cidr
-
+  cidr        = var.vpc_cidr
   environment = var.environment
-
-  enable_vpc_endpoints = true
 }
 
-############################
-# ALB Module
-############################
+###########################
+# ALB
+###########################
 
 module "alb" {
 
   source = "../../modules/alb"
 
-  environment = var.environment
-
-  vpc_id = module.vpc.vpc_id
-
-  subnet_ids = module.vpc.public_subnet_ids
-
+  environment       = var.environment
+  vpc_id            = module.vpc.vpc_id
+  subnet_ids        = module.vpc.public_subnet_ids
   security_group_id = aws_security_group.alb_sg.id
 }
 
-############################
-# EC2 Module
-############################
+###########################
+# EC2
+###########################
 
 module "ec2" {
 
@@ -60,7 +50,11 @@ module "ec2" {
 
   environment = var.environment
 
+  # REQUIRED
   subnet_ids = module.vpc.private_subnet_ids
+
+  # REQUIRED
+  private_subnet_ids = module.vpc.private_subnet_ids
 
   security_group_id = aws_security_group.ec2_sg.id
 

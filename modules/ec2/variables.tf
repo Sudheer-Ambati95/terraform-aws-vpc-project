@@ -53,3 +53,12 @@ variable "instance_profile_name" {
 variable "target_group_arn" {
   type = string
 }
+
+################################
+# Private Subnets
+################################
+
+variable "private_subnet_ids" {
+  description = "List of private subnet IDs for ASG"
+  type        = list(string)
+}

@@ -1,19 +1,17 @@
-############################################
-# Security Group for EC2
-############################################
+################################
+# EC2 Security Group
+################################
 
 resource "aws_security_group" "ec2_sg" {
 
-  name = "ec2-sg"
-
-  description = "Allow HTTP from ALB"
+  name = "${var.environment}-ec2-sg"
 
   vpc_id = module.vpc.vpc_id
 
   ingress {
 
-    from_port = 80
-    to_port   = 80
+    from_port = 8080
+    to_port   = 8080
     protocol  = "tcp"
 
     security_groups = [
@@ -28,42 +26,8 @@ resource "aws_security_group" "ec2_sg" {
     to_port   = 0
     protocol  = "-1"
 
-    cidr_blocks = [
-      "0.0.0.0/0"
-    ]
+    cidr_blocks = ["0.0.0.0/0"]
 
-  }
-
-}
-
-############################################
-# Private EC2 Instance
-############################################
-
-resource "aws_instance" "private_ec2" {
-
-  ami = data.aws_ami.amazon_linux.id
-
-  instance_type = "t3.micro"
-
-  #########################################
-  # Uses PRIVATE subnet
-  #########################################
-
-  subnet_id = module.vpc.private_subnet_ids[0]
-
-  #########################################
-  # Enables SSM access
-  #########################################
-
-  iam_instance_profile = aws_iam_instance_profile.ssm_profile.name
-
-  vpc_security_group_ids = [
-    aws_security_group.ec2_sg.id
-  ]
-
-  tags = {
-    Name = "private-ec2"
   }
 
 }

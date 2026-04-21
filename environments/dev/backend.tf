@@ -2,7 +2,7 @@ terraform {
 
   backend "s3" {
 
-    bucket = "tfstate-sudheer-aws-001"
+    bucket = "tfstate-sudheer-001"
 
     key = "dev/terraform.tfstate"
 
@@ -11,7 +11,5 @@ terraform {
     dynamodb_table = "tfstate-lock"
 
     encrypt = true
-
   }
-
 }
